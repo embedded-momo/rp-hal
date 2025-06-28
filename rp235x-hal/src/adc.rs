@@ -177,7 +177,7 @@ use embedded_hal_0_2::adc::{Channel, OneShot};
 use crate::{
     dma,
     gpio::{
-        bank0::{Gpio26, Gpio27, Gpio28, Gpio29},
+        bank0::{Gpio26, Gpio27, Gpio28, Gpio29, Gpio47},
         AnyPin, DynBankId, DynPinId, Function, OutputEnableOverride, Pin, PullType, ValidFunction,
     },
     pac::{dma::ch::ch_ctrl_trig::TREQ_SEL_A, ADC, RESETS},
@@ -209,7 +209,7 @@ where
     /// Captures the pin to be used with an ADC and disables its digital circuitry.
     pub fn new(pin: P) -> Result<Self, InvalidPinError> {
         let pin_id = pin.borrow().id();
-        if (26..=29).contains(&pin_id.num) && pin_id.bank == DynBankId::Bank0 {
+        if (40..=47).contains(&pin_id.num) && pin_id.bank == DynBankId::Bank0 {
             let mut p = pin.into();
             let (od, ie) = (p.get_output_disable(), p.get_input_enable());
             p.set_output_enable_override(OutputEnableOverride::Disable);
@@ -236,7 +236,11 @@ where
     pub fn channel(&self) -> u8 {
         let pin_id = self.pin.borrow().id();
         // Self::new() makes sure that this is a valid channel number
-        pin_id.num - 26
+        if pin_id.num > 40 {
+            pin_id.num - 40
+        } else {
+            pin_id.num - 26
+        }
     }
 }
 
@@ -278,10 +282,11 @@ macro_rules! channel {
     };
 }
 
-channel!(Gpio26, 0);
-channel!(Gpio27, 1);
-channel!(Gpio28, 2);
-channel!(Gpio29, 3);
+// channel!(Gpio26, 0);
+// channel!(Gpio27, 1);
+// channel!(Gpio28, 2);
+// channel!(Gpio29, 3);
+channel!(Gpio47, 7);
 
 impl<F: Function, M: PullType> Channel<Adc> for AdcPin<Pin<DynPinId, F, M>>
 where
